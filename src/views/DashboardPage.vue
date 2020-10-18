@@ -433,9 +433,12 @@ export default {
 
       for(let i = 0; i < years.length; i++){
         let index = years[i]
-        oaData.data.push(this.balanceHistory.ordinary_ac[index])
-        maData.data.push(this.balanceHistory.medisave_ac[index])
-        saData.data.push(this.balanceHistory.special_ac[index])
+        let oaAmount = parseFloat(this.balanceHistory.ordinary_ac[index]).toFixed(2)
+        let maAmount = parseFloat(this.balanceHistory.medisave_ac[index]).toFixed(2)
+        let saAmount = parseFloat(this.balanceHistory.special_ac[index]).toFixed(2)
+        oaData.data.push(oaAmount)
+        maData.data.push(maAmount)
+        saData.data.push(saAmount)
       }
 
       chartData.datasets.push(oaData)
@@ -443,6 +446,7 @@ export default {
       chartData.datasets.push(saData)
       this.multiLineData = chartData
     },
+
 
     getYears() {
       return [...new Set(this.balanceHistory.year)]

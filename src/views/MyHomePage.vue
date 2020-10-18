@@ -519,7 +519,7 @@ export default {
 
     getRandomPictureURL() {
       return (
-        "https://source.unsplash.com/featured/?doctor,medicine,medical," +
+        "https://source.unsplash.com/featured/?bungalow,home,house," +
         Math.floor(Math.random() * 101)
       );
     },
