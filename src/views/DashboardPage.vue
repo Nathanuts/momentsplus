@@ -8,10 +8,19 @@
               <v-list-item-content>
                 <div class="overline mb-4">Welcome to Moments+</div>
                 <v-list-item-title class="headline mb-1">
+                  <v-row>
+                    <v-col cols="6">
                   <v-avatar>
-                    <img src="../assets/2a.jpg" alt="Main Profile" />
+                    <img v-if="user.user_id !== '2'" src="../assets/2a.jpg" alt="Main Profile" />
+                    <img v-else src="../assets/2g.jpg" alt="Main Profile" />
                   </v-avatar>
                   {{ this.user.name }}
+                  </v-col>
+                  <v-col cols="3"></v-col>
+                    <v-col cols="3">
+                  <v-img class="mr-2" max-height="65" max-width="65" src="../assets/qr.png"></v-img>
+                    </v-col>
+                  </v-row>
                 </v-list-item-title>
                 <span class="caption"
                   >Last Logged On: {{ this.lastLoggedIn }}</span
@@ -365,6 +374,13 @@ export default {
   }),
 
   methods: {
+    getRandomPictureURL() {
+      return (
+        "https://source.unsplash.com/featured/?elderly,man,old" +
+        Math.floor(Math.random() * 101)
+      );
+    },
+
     updateChartData(year){
       let chartData = {
       labels: [

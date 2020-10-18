@@ -6,12 +6,21 @@
           <v-card class="rounded-xl" outlined height="100%">
             <v-list-item three-line>
               <v-list-item-content>
-                <div class="overline mb-4">Welcome to asdas+</div>
+                <div class="overline mb-4">Welcome to Moments+</div>
                 <v-list-item-title class="headline mb-1">
+                  <v-row>
+                    <v-col cols="6">
                   <v-avatar>
-                    <img src="../assets/2a.jpg" alt="Main Profile" />
+                    <img v-if="user.user_id !== '2'" src="../assets/2a.jpg" alt="Main Profile" />
+                    <img v-else src="../assets/2g.jpg" alt="Main Profile" />
                   </v-avatar>
                   {{ this.user.name }}
+                  </v-col>
+                  <v-col cols="3"></v-col>
+                    <v-col cols="3">
+                  <v-img class="mr-2" max-height="65" max-width="65" src="../assets/qr.png"></v-img>
+                    </v-col>
+                  </v-row>
                 </v-list-item-title>
                 <span class="caption"
                   >Last Logged On: {{ this.lastLoggedIn }}</span
@@ -438,17 +447,8 @@ export default {
         console.log(error);
       });
 
-    this.$http
-      .get(`/users/balance_history/${this.user.user_id}`)
-      .then((response) => {
-        this.balanceHistory = response.data.result;
-        this.years = this.getYears();
-        this.selectedYear = this.years[this.years.length - 1];
-        this.multiLineData.datasets = this.updateChartData(this.selectedYear);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    this.year = this.getYear();
+    this.multiLineData.datasets = this.updateChartData(this.year);
   },
 
   data: () => ({
@@ -456,7 +456,7 @@ export default {
     curatedMedicalQuestions: [],
     dropdown: false,
     selectedYear: null,
-    years: [],
+    year: 0,
     balanceHistory: {},
     multiLineData: null,
     lastLoggedIn: new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000)
@@ -492,6 +492,7 @@ export default {
         .toUTCString()
         .slice(0, 16);
     },
+    
     updateChartData(year) {
       let chartData = {
         labels: [
@@ -510,36 +511,43 @@ export default {
         ],
         datasets: [],
       };
-      let years = this.balanceHistory.year.reduce(function (
-        accum,
-        check,
-        index
-      ) {
-        if (check === year) {
-          accum.push(index);
-        }
-        return accum;
-      },
-      []);
 
-      let healthData = {
-        backgroundColor: "#66bb6a",
-        borderColor: "#66bb6a",
+      let yearData = this.user.transactions.filter((item)=>{
+        return item.date.substring(0,4) === year.toString();
+      })
+      
+      let yearDataGroupByMonth = [0,0,0,0,0,0,0,0,0,0,0,0]
+      yearData.map((target) => {
+        let date_array = target.date.split('-')
+        let month = parseInt(date_array[1],10)
+        if(target.type === 'insurance'){
+          yearDataGroupByMonth[month-1] += target.amount
+        }
+      })
+
+      let oaData = {
+        backgroundColor: "#81c784",
+        borderColor: "#81c784",
         fill: false,
         data: [],
       };
-
-      for (let i = 0; i < years.length; i++) {
-        let index = years[i];
-        healthData.data.push(this.balanceHistory.medisave_ac[index]);
-      }
-
-      chartData.datasets.push(healthData);
+      
+      oaData.data = yearDataGroupByMonth;
+      chartData.datasets.push(oaData);
       this.multiLineData = chartData;
     },
 
-    getYears() {
-      return [...new Set(this.balanceHistory.year)];
+    getYear() {
+      let latestDate = new Date(Math.max(...this.user.transactions
+        .map(element => new Date(element.date))));
+      return latestDate.getFullYear()
+    },
+
+    getRandomOldManPictureURL() {
+      return (
+        "https://source.unsplash.com/featured/?doctor,medicine,medical," +
+        Math.floor(Math.random() * 101)
+      );
     },
 
     getRandomPictureURL() {

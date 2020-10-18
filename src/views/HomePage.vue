@@ -11,7 +11,8 @@
                   <v-row>
                     <v-col cols="6">
                   <v-avatar>
-                    <img src="../assets/2a.jpg" alt="Main Profile" />
+                    <img v-if="user.user_id !== '2'" src="../assets/2a.jpg" alt="Main Profile" />
+                    <img v-else src="../assets/2g.jpg" alt="Main Profile" />
                   </v-avatar>
                   {{ this.user.name }}
                   
@@ -442,6 +443,12 @@ export default {
   }),
 
   methods: {
+    getRandomPictureURL() {
+      return (
+        "https://source.unsplash.com/featured/?elderly,man,old" +
+        Math.floor(Math.random() * 101)
+      );
+    },
     getCuratedNewsOrCourses(items) {
       let randomItems = [];
       let indexTracker = [];

@@ -94,7 +94,7 @@
         </v-col>
         <v-col xs="12" sm="6" md="3">
           <MidSizeCard
-            title="Tools"
+            title="Services"
             icon="mdi-face-agent"
             color="green lighten-2"
           />

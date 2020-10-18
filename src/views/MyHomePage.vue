@@ -8,10 +8,19 @@
               <v-list-item-content>
                 <div class="overline mb-4">Welcome to Moments+</div>
                 <v-list-item-title class="headline mb-1">
+                  <v-row>
+                    <v-col cols="6">
                   <v-avatar>
-                    <img src="../assets/2a.jpg" alt="Main Profile" />
+                    <img v-if="user.user_id !== '2'" src="../assets/2a.jpg" alt="Main Profile" />
+                    <img v-else src="../assets/2g.jpg" alt="Main Profile" />
                   </v-avatar>
                   {{ this.user.name }}
+                  </v-col>
+                  <v-col cols="3"></v-col>
+                    <v-col cols="3">
+                  <v-img class="mr-2" max-height="65" max-width="65" src="../assets/qr.png"></v-img>
+                    </v-col>
+                  </v-row>
                 </v-list-item-title>
                 <span class="caption"
                   >Last Logged On: {{ this.lastLoggedIn }}</span
@@ -393,44 +402,6 @@ export default {
           .map((x) => ({sort: Math.random(), val: x}))
           .sort((x, y) => x.sort - y.sort)
           .map((x) => x.val)
-        
-    //     let whyQuestions = [];
-    //     let whoQuestions = [];
-    //     let whatQuestions = [];
-    //     let whereQuestions = [];
-    //     let whenQuestions = [];
-    //     let howQuestions = [];
-    //     for(let i = 0; i < questionsArr.length; i++){
-    //       let question = questionsArr[i]
-    //       switch(question.Category){
-    //         case 'Why':
-    //           whyQuestions.push(question)
-    //           break;
-    //         case 'When':
-    //           whenQuestions.push(question)
-    //           break;
-    //         case 'Who':
-    //           whoQuestions.push(question)
-    //           break;
-    //         case 'What':
-    //           whatQuestions.push(question)
-    //           break;
-    //         case 'Where':
-    //           whereQuestions.push(question)
-    //           break;
-    //         case 'How':
-    //           howQuestions.push(question)
-    //           break;
-    //         default:
-    //           break;
-    //       } 
-    //     }
-    //     this.curatedMedicalQuestions.push(whatQuestions[Math.floor(Math.random()*whatQuestions.length)])
-    //     this.curatedMedicalQuestions.push(whenQuestions[Math.floor(Math.random()*whatQuestions.length)])
-    //     this.curatedMedicalQuestions.push(whereQuestions[Math.floor(Math.random()*whatQuestions.length)]) 
-    //     this.curatedMedicalQuestions.push(whyQuestions[Math.floor(Math.random()*whatQuestions.length)])
-    //     this.curatedMedicalQuestions.push(whoQuestions[Math.floor(Math.random()*whatQuestions.length)])
-    //     this.curatedMedicalQuestions.push(howQuestions[Math.floor(Math.random()*whatQuestions.length)])
       })
       .catch((error) => {
         console.log(error);
@@ -444,18 +415,8 @@ export default {
       .catch((error) => {
         console.log(error);
       });
-
-    this.$http
-      .get(`/users/balance_history/${this.user.user_id}`)
-      .then((response) => {
-        this.balanceHistory = response.data.result;
-        this.years = this.getYears();
-        this.selectedYear = this.years[this.years.length - 1];
-        this.multiLineData.datasets = this.updateChartData(this.selectedYear);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+      this.year = this.getYear();
+      this.multiLineData.datasets = this.updateChartData(this.year);
   },
 
   data: () => ({
@@ -463,7 +424,7 @@ export default {
     curatedMedicalQuestions: [],
     dropdown: false,
     selectedYear: null,
-    years: [],
+    year: 0,
     balanceHistory: {},
     multiLineData: null,
     lastLoggedIn: new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000)
@@ -517,17 +478,19 @@ export default {
         ],
         datasets: [],
       };
-      let years = this.balanceHistory.year.reduce(function (
-        accum,
-        check,
-        index
-      ) {
-        if (check === year) {
-          accum.push(index);
+
+      let yearData = this.user.transactions.filter((item)=>{
+        return item.date.substring(0,4) === year.toString();
+      })
+      
+      let yearDataGroupByMonth = [0,0,0,0,0,0,0,0,0,0,0,0]
+      yearData.map((target) => {
+        let date_array = target.date.split('-')
+        let month = parseInt(date_array[1],10)
+        if(target.type === 'others'){
+          yearDataGroupByMonth[month-1] += target.amount
         }
-        return accum;
-      },
-      []);
+      })
 
       let oaData = {
         backgroundColor: "#a1887f",
@@ -535,18 +498,23 @@ export default {
         fill: false,
         data: [],
       };
-
-      for (let i = 0; i < years.length; i++) {
-        let index = years[i];
-        oaData.data.push(this.balanceHistory.ordinary_ac[index]);
-      }
-
+      
+      oaData.data = yearDataGroupByMonth;
       chartData.datasets.push(oaData);
       this.multiLineData = chartData;
     },
 
-    getYears() {
-      return [...new Set(this.balanceHistory.year)];
+    getYear() {
+      let latestDate = new Date(Math.max(...this.user.transactions
+        .map(element => new Date(element.date))));
+      return latestDate.getFullYear()
+    },
+
+    getRandomOldManPictureURL() {
+      return (
+        "https://source.unsplash.com/featured/?elderly,man,old" +
+        Math.floor(Math.random() * 101)
+      );
     },
 
     getRandomPictureURL() {
