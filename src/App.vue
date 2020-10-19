@@ -13,3 +13,9 @@ export default {
   }
 };
 </script>
+
+<style>
+#app {
+  background: linear-gradient(to right, rgba(226,226,226,1) 0%, rgba(254,254,254,1) 80%);
+}
+</style>
